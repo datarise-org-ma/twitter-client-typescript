@@ -58,11 +58,12 @@ export class AsyncTwitterClient {
     }
 
     private __headers(): AxiosRequestHeaders {
-        return {
-            "x-rapidapi-key": `${this.api_key}`,
+        let headers: { [header: string]: string } = {
+            "x-rapidapi-key": this.api_key,
             "x-rapidapi-host": HOST,
-            "Content-Type": HOST,
+            "Content-Type": HOST
         };
+        return headers as AxiosRequestHeaders;
     }
 
     get_timeout(): number {
@@ -93,7 +94,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[Search] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -116,7 +117,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[Tweet Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -141,7 +142,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[Tweet Retweeters] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -165,7 +166,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[Tweet Favoriters] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -196,7 +197,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[User Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -227,7 +228,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[User Tweets] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -258,7 +259,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[User Tweets and Replies] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -289,7 +290,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[User Followers] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -320,7 +321,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[User Following] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -351,7 +352,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[User Likes] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -382,7 +383,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[User Media] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -400,7 +401,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[List Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -421,7 +422,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[List Tweets] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -438,7 +439,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url);
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[Trends Locations] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -456,7 +457,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[Trends] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -474,7 +475,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[Community Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -495,7 +496,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[Community Tweets] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
@@ -516,7 +517,7 @@ export class AsyncTwitterClient {
         try {
             const response = await this.session.get(url, { params: params });
             if (response.status === 200) {
-                this.rate_limit = RateLimit.fromHeaders(response.headers);
+                this.rate_limit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[Community Members] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
             return response;
