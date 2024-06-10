@@ -1,5 +1,10 @@
 # Unofficial Twitter Typescript Client for [Twitter/X Rapid API](https://rapidapi.com/datarise-datarise-default/api/twitter-x)
 
+<!-- Add badges for CI/CD, npm version, etc. -->
+![Build Status](https://github.com/datarise-org-ma/twitter-client-typescript/actions/workflows/ci.yaml/badge.svg)
+[![npm version](https://badge.fury.io/js/twitter-client-typescript.svg)](https://badge.fury.io/js/twitter-client-typescript)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 This is a TypeScript package that provides an asynchronous client for interacting with the Twitter V2 API via the [RapidAPI platform](https://rapidapi.com/datarise-datarise-default/api/twitter-x). This client provides various methods for accessing Twitter data.
 
 ## Table of Contents
