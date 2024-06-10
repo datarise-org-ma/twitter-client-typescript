@@ -1,5 +1,5 @@
 
-import axios, { AxiosInstance, AxiosResponse, AxiosRequestHeaders } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, AxiosRequestHeaders, AxiosResponseHeaders } from 'axios';
 import { performance } from 'perf_hooks';
 
 const HOST = "twitter-x.p.rapidapi.com";
@@ -19,13 +19,22 @@ export class RateLimit {
         this.reset = reset;
     }
 
-    static fromHeaders(headers: any): RateLimit {
-        const c = new RateLimit(
-            parseInt(headers["x-ratelimit-rapid-free-plans-hard-limit-limit"]),
-            parseInt(headers["x-ratelimit-rapid-free-plans-hard-limit-remaining"]),
-            parseInt(headers["x-ratelimit-rapid-free-plans-hard-limit-reset"])
-        );
-        LOGGER.debug(`Rate limit: ${c}`, { "limit": c.remaining });
+    static fromHeaders(headers: AxiosResponseHeaders): RateLimit {
+        const limit = parseInt(headers["x-ratelimit-rapid-free-plans-hard-limit-limit"] || "0");
+        const remaining = parseInt(headers["x-ratelimit-rapid-free-plans-hard-limit-remaining"] || "0");
+        const reset = parseInt(headers["x-ratelimit-rapid-free-plans-hard-limit-reset"] || "0");
+
+        if (isNaN(limit) || isNaN(remaining) || isNaN(reset)) {
+            LOGGER.error('Invalid headers provided');
+            return new RateLimit(0, 0, 0);
+        }
+
+        const c = new RateLimit(limit, remaining, reset);
+
+        if (LOGGER && typeof LOGGER.debug === 'function') {
+            LOGGER.debug(`Rate limit: ${c}`, { "limit": c.remaining });
+        }
+
         return c;
     }
 }
@@ -62,7 +71,7 @@ export class AsyncTwitterClient {
 
     set_timeout(timeout: number): void {
         this.timeout = timeout;
-        this.session = axios.create({ timeout: this.timeout, headers: this.headers });
+        this.session.defaults.timeout = this.timeout;
     }
 
     get_rate_limit(): RateLimit {
@@ -81,12 +90,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[Search] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[Search] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async tweet_details(tweet_id: string, cursor: string | null = null): Promise<AxiosResponse> {
@@ -99,12 +113,18 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[Tweet Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[Tweet Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async tweet_retweeters(tweet_id: string, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -118,12 +138,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[Tweet Retweeters] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[Tweet Retweeters] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async tweet_favoriters(tweet_id: string, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -137,12 +162,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[Tweet Favoriters] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[Tweet Favoriters] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async user_details(username: string | null = null, user_id: string | null = null, cursor: string | null = null): Promise<AxiosResponse> {
@@ -163,12 +193,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[User Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[User Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async user_tweets(username: string | null = null, user_id: string | null = null, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -189,12 +224,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[User Tweets] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[User Tweets] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async user_tweets_and_replies(username: string | null = null, user_id: string | null = null, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -215,12 +255,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[User Tweets and Replies] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[User Tweets and Replies] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async user_followers(username: string | null = null, user_id: string | null = null, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -241,12 +286,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[User Followers] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[User Followers] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async user_following(username: string | null = null, user_id: string | null = null, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -267,12 +317,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[User Following] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[User Following] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async user_likes(username: string | null = null, user_id: string | null = null, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -293,12 +348,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[User Likes] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[User Likes] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async user_media(username: string | null = null, user_id: string | null = null, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -319,12 +379,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[User Media] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[User Media] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async list_details(list_id: string): Promise<AxiosResponse> {
@@ -332,12 +397,17 @@ export class AsyncTwitterClient {
         LOGGER.info(`[List Details] List ID: ${list_id}`, { "limit": this.rate_limit });
         const params: { list_id: string } = { "list_id": list_id };
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[List Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[List Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async list_tweets(list_id: string, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -348,24 +418,34 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[List Tweets] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[List Tweets] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async trends_locations(): Promise<AxiosResponse> {
         const url = `${this.base_url}trends/available`;
         LOGGER.info(`[Trends Locations]`, { "limit": this.rate_limit });
         const start = performance.now();
-        const response = await this.session.get(url);
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url);
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[Trends Locations] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[Trends Locations] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async trends(woeid: string): Promise<AxiosResponse> {
@@ -373,12 +453,17 @@ export class AsyncTwitterClient {
         LOGGER.info(`[Trends] WOEID: ${woeid}`, { "limit": this.rate_limit });
         const params: { id: string } = { "id": woeid };
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[Trends] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[Trends] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async community_details(community_id: string): Promise<AxiosResponse> {
@@ -386,12 +471,17 @@ export class AsyncTwitterClient {
         LOGGER.info(`[Community Details] Community ID: ${community_id}`, { "limit": this.rate_limit });
         const params: { community_id: string } = { "community_id": community_id };
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[Community Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[Community Details] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async community_tweets(community_id: string, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -402,12 +492,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[Community Tweets] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[Community Tweets] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
     async community_members(community_id: string, limit: number = 20, cursor: string | null = null): Promise<AxiosResponse> {
@@ -418,12 +513,17 @@ export class AsyncTwitterClient {
             params["cursor"] = cursor;
         }
         const start = performance.now();
-        const response = await this.session.get(url, { params: params });
-        if (response.status === 200) {
-            this.rate_limit = RateLimit.fromHeaders(response.headers);
+        try {
+            const response = await this.session.get(url, { params: params });
+            if (response.status === 200) {
+                this.rate_limit = RateLimit.fromHeaders(response.headers);
+            }
+            LOGGER.debug(`[Community Members] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
+            return response;
+        } catch (error) {
+            LOGGER.error(`[Search] Request failed: ${error}`);
+            throw error;
         }
-        LOGGER.debug(`[Community Members] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rate_limit.remaining}`);
-        return response;
     }
 
 }
