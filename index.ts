@@ -85,7 +85,7 @@ export class RateLimit {
 }
 
 export interface ClientConfig {
-    apiKey: string;
+    apiKey?: string;
     logLevel?: string;
     timeout?: number;
 }
@@ -160,7 +160,7 @@ export class AsyncTwitterClient implements IAsyncTwitterClient {
         }
         var newConfig: ClientConfig = {
             apiKey: this.apiKey,
-            logLevel: config.logLevel || this.logLevel,
+            logLevel: config.logLevel?.toUpperCase() || this.logLevel,
             timeout: config.timeout || this.timeout
         };
         return newConfig;
