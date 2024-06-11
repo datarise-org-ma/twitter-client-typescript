@@ -35,8 +35,8 @@ To use the client, you will need to create an instance of the `AsyncTwitterClien
 ```typescript
 import { AsyncTwitterClient } from 'twitter-client-typescript';
 
-const api_key = 'YOUR_RAPIDAPI_KEY';
-const client = new AsyncTwitterClient(api_key);
+const client = new AsyncTwitterClient({ apiKey: "YOUR_API_KEY" });
+
 
 // Use the client to make API calls
 // Search for tweets
@@ -48,7 +48,7 @@ client.search('elon musk').then((response) => {
 });
 
 // Get user details
-client.user_details('elonmusk').then((response) => {
+client.userDetails('elonmusk').then((response) => {
     result = response.data;
     console.log(result);
 }).catch((error) => {
@@ -56,7 +56,7 @@ client.user_details('elonmusk').then((response) => {
 });
 
 // Get user tweets
-client.user_tweets('elonmusk').then((response) => {
+client.userTweets('elonmusk').then((response) => {
     result = response.data;
     console.log(result);
 }).catch((error) => {
@@ -72,13 +72,12 @@ client.user_tweets('elonmusk').then((response) => {
 ```typescript
 import { AsyncTwitterClient } from 'twitter-client-typescript';
 
-const api_key = 'YOUR_RAPID_API_KEY';
-const client = new AsyncTwitterClient(api_key, 10000); // 10s timeout
+const client = new AsyncTwitterClient({ apiKey: "YOUR_API_KEY", timeout: 10000 });
 
 const users = ['elonmusk', 'BillGates', 'JeffBezos', 'tim_cook', 'satyanadella'];
 
 // Create an array of promises
-const promises = users.map((user) => client.user_details(user));
+const promises = users.map((user) => client.userDetails(user));
 
 // Make the requests in parallel
 Promise.all(promises).then((responses) => {
@@ -92,7 +91,7 @@ Promise.all(promises).then((responses) => {
 
 ## Check Rate limit
 
-You can check the rate limit of the API using the `rate_limit` method. AsyncTwitterClient has a `rate_limit` attribute that returns the rate limit details. It's updated after each request.
+You can check the rate limit of the API using the `rateLimit` method. AsyncTwitterClient has a `rateLimit` attribute that returns the rate limit details. It's updated after each request.
 
 ```typescript
 import { AsyncTwitterClient } from 'twitter-client-typescript';
@@ -101,7 +100,7 @@ const api_key = 'YOUR_RAPID_API_KEY';
 const client = new AsyncTwitterClient(api_key);
 
 // Get user details
-client.user_details('elonmusk').then((response) => {
+client.userDetails('elonmusk').then((response) => {
     result = response.data;
     console.log(result);
 }).catch((error) => {
@@ -109,9 +108,9 @@ client.user_details('elonmusk').then((response) => {
 });
 
 // Check rate limit
-console.log(`Limit : ${client.rate_limit.limit}`);
-console.log(`Remaining requests: ${client.rate_limit.remaining}`);
-console.log(`Reset time: ${client.rate_limit.reset}`);
+console.log(`Limit : ${client.rateLimit.limit}`);
+console.log(`Remaining requests: ${client.rateLimit.remaining}`);
+console.log(`Reset time: ${client.rateLimit.reset}`);
 ```
 
 
