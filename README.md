@@ -11,8 +11,11 @@ This is a TypeScript package that provides an asynchronous client for interactin
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Advanced Usage](#advanced-usage)
+  - [Simple Example](#simple-example)
+  - [Advanced Usage](#advanced-usage)
+  - [Check Rate limit](#check-rate-limit)
 - [License](#license)
+- [Contact](#contact)
 
 ## Installation
 
@@ -29,6 +32,8 @@ yarn add twitter-client-typescript
 ```
 
 ## Usage
+
+### Simple Example
 
 To use the client, you will need to create an instance of the `AsyncTwitterClient` class and provide your RapidAPI key:
 
@@ -65,7 +70,7 @@ client.userTweets('elonmusk').then((response) => {
 
 ```
 
-## Advanced Usage
+### Advanced Usage
 
 *AsyncTwitterClient* class supports batch requests. You can make multiple requests in parallel and get the results in a single response. Here is an example:
 
@@ -89,15 +94,14 @@ Promise.all(promises).then((responses) => {
 });
 ```
 
-## Check Rate limit
+### Check Rate limit
 
-You can check the rate limit of the API using the `rateLimit` method. AsyncTwitterClient has a `rateLimit` attribute that returns the rate limit details. It's updated after each request.
+You can check the rate limit of the API using the `rateLimit` method. `AsyncTwitterClient` has a `rateLimit` attribute that returns the rate limit details. It's updated after each request.
 
 ```typescript
 import { AsyncTwitterClient } from 'twitter-client-typescript';
 
-const api_key = 'YOUR_RAPID_API_KEY';
-const client = new AsyncTwitterClient(api_key);
+const client = new AsyncTwitterClient({apiKey: 'YOUR_RAPID_API_KEY'});
 
 // Get user details
 client.userDetails('elonmusk').then((response) => {
