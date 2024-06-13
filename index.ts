@@ -103,7 +103,6 @@ export interface IAsyncTwitterClient {
     userTweetsAndReplies(username: string | null, user_id: string | null, limit: number, cursor: string | null, config: ClientConfig | null): Promise<AxiosResponse>;
     userFollowers(username: string | null, user_id: string | null, limit: number, cursor: string | null, config: ClientConfig | null): Promise<AxiosResponse>;
     userFollowing(username: string | null, user_id: string | null, limit: number, cursor: string | null, config: ClientConfig | null): Promise<AxiosResponse>;
-    userLikes(username: string | null, user_id: string | null, limit: number, cursor: string | null, config: ClientConfig | null): Promise<AxiosResponse>;
     userMedia(username: string | null, user_id: string | null, limit: number, cursor: string | null, config: ClientConfig | null): Promise<AxiosResponse>;
     listDetails(list_id: string, config: ClientConfig | null): Promise<AxiosResponse>;
     listTweets(list_id: string, limit: number, cursor: string | null, config: ClientConfig | null): Promise<AxiosResponse>;
@@ -125,7 +124,7 @@ export class AsyncTwitterClient implements IAsyncTwitterClient {
     private logLevel: string;
 
     // Instantiates a new AsyncTwitterClient
-    // const client = new AsyncTwitterClient({ apiKey: "YOUR_API_KEY});
+    // const client = new AsyncTwitterClient({ apiKey: "YOUR_API_KEY});d
     constructor(config: ClientConfig) {
         if (config.apiKey === undefined || config.apiKey === null || config.apiKey === "") {
             throw new Error("API Key is required.");
@@ -141,11 +140,22 @@ export class AsyncTwitterClient implements IAsyncTwitterClient {
         LOGGER = new Console(this.logLevel);
     }
 
+    private __userAgent(): string {
+        const packageConfig = require('./package.json');
+        const version = packageConfig.version;
+        const packageName = packageConfig.name;
+        // Get session user agent
+        const defaultSessionUserAgent = this.session.defaults.headers['User-Agent'];
+        // Set user agent
+        return `${defaultSessionUserAgent} ${packageName}/${version}`;
+    }
+
     private __headers(): AxiosRequestHeaders {
         let headers: { [header: string]: string } = {
             "x-rapidapi-key": this.apiKey,
             "x-rapidapi-host": HOST,
-            "Content-Type": HOST
+            "Content-Type": HOST,
+            "User-Agent": this.__userAgent(),
         };
         return headers as AxiosRequestHeaders;
     }
@@ -433,38 +443,6 @@ export class AsyncTwitterClient implements IAsyncTwitterClient {
                 this.rateLimit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
             }
             LOGGER.debug(`[User Following] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rateLimit.remaining}`);
-            return response;
-        } catch (error) {
-            LOGGER.error(`[Search] Request failed: ${error}`);
-            throw error;
-        }
-    }
-
-    async userLikes(username: string | null = null, user_id: string | null = null, limit: number = 20, cursor: string | null = null, config: ClientConfig | null = null): Promise<AxiosResponse> {
-        if (!username && !user_id) {
-            throw new Error("Either username or user_id must be provided.");
-        }
-        const url = `${this.baseUrl}user/likes`;
-        const params: { username?: string; user_id?: string; limit: number; cursor?: string } = { "limit": limit };
-        if (username) {
-            LOGGER.info(`[User Likes] Username: ${username} - Limit: ${limit}`, { "limit": this.rateLimit });
-            params["username"] = username;
-        }
-        if (user_id) {
-            LOGGER.info(`[User Likes] User ID: ${user_id} - Limit: ${limit}`, { "limit": this.rateLimit });
-            params["user_id"] = user_id;
-        }
-        if (cursor) {
-            params["cursor"] = cursor;
-        }
-        const start = performance.now();
-        try {
-            const c = this.updateConfig(config);
-            const response = await this.session.get(url, { params: params, timeout: c.timeout });
-            if (response.status === 200) {
-                this.rateLimit = RateLimit.fromHeaders(response.headers as AxiosResponseHeaders);
-            }
-            LOGGER.debug(`[User Likes] Response: ${response.status}, elapsed time: ${(performance.now() - start).toFixed(2)}s - Limit: ${this.rateLimit.remaining}`);
             return response;
         } catch (error) {
             LOGGER.error(`[Search] Request failed: ${error}`);

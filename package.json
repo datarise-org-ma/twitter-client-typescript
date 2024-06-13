@@ -1,6 +1,6 @@
 {
   "name": "twitter-client-typescript",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Python client for interacting with Twitter V2 API available at https://rapidapi.com/datarise-datarise-default/api/twitter-x",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
