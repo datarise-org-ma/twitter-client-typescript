@@ -151,7 +151,8 @@ export class AsyncTwitterClient implements IAsyncTwitterClient {
         const version = packageConfig.version;
         const packageName = packageConfig.name;
         // Get session user agent
-        const defaultSessionUserAgent = axios.defaults.headers['User-Agent'];
+        const axios_version = axios.VERSION
+        const defaultSessionUserAgent = `axios/${axios_version}`;
         // Set user agent
         return `${defaultSessionUserAgent} ${packageName}/${version}`;
     }
