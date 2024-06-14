@@ -133,9 +133,9 @@ export class AsyncTwitterClient implements IAsyncTwitterClient {
         }
         this.baseUrl = BASE;
         this.apiKey = config.apiKey;
-        this.headers = this.__headers();
         this.rateLimit = new RateLimit(0, 0, 0);
         this.timeout = config.timeout || 10000;
+        this.headers = this.__headers();
         this.session = axios.create({ timeout: this.timeout, headers: this.headers });
         this.logLevel = config.logLevel || LogLevel.INFO;
         this.logLevel.toUpperCase()
@@ -151,7 +151,7 @@ export class AsyncTwitterClient implements IAsyncTwitterClient {
         const version = packageConfig.version;
         const packageName = packageConfig.name;
         // Get session user agent
-        const defaultSessionUserAgent = this.session.defaults.headers['User-Agent'];
+        const defaultSessionUserAgent = axios.defaults.headers['User-Agent'];
         // Set user agent
         return `${defaultSessionUserAgent} ${packageName}/${version}`;
     }
