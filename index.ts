@@ -1,6 +1,8 @@
 
 import axios, { AxiosInstance, AxiosResponse, AxiosRequestHeaders, AxiosResponseHeaders } from 'axios';
 import { performance } from 'perf_hooks';
+import * as path from 'path';
+import * as fs from 'fs';
 
 const HOST = "twitter-x.p.rapidapi.com";
 const BASE = `https://${HOST}/`;
@@ -141,7 +143,11 @@ export class AsyncTwitterClient implements IAsyncTwitterClient {
     }
 
     private __userAgent(): string {
-        const packageConfig = require('./package.json');
+        const packageConfigPath = path.join(__dirname, '..', 'package.json');
+        if (!fs.existsSync(packageConfigPath)) {
+            throw new Error('package.json not found');
+        }
+        const packageConfig = require(packageConfigPath);
         const version = packageConfig.version;
         const packageName = packageConfig.name;
         // Get session user agent
